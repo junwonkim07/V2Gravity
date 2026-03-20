@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 
 void main() {
   runApp(const V2Gravity());
@@ -66,10 +67,7 @@ class _MainScreenState extends State<MainScreen>
   late Animation<double> _morphAnim;
 
   List<Map<String, dynamic>> servers = [
-    {'flag': '🇯🇵', 'name': '일본 도쿄', 'meta': 'VLESS · WS · TLS', 'ping': '12ms', 'pingLevel': 0},
-    {'flag': '🇸🇬', 'name': '싱가포르', 'meta': 'VLESS · gRPC · TLS', 'ping': '58ms', 'pingLevel': 1},
-    {'flag': '🇺🇸', 'name': '미국 LA', 'meta': 'VLESS · TCP · TLS', 'ping': '182ms', 'pingLevel': 2},
-  ];
+    ];
 
   @override
   void initState() {
@@ -116,21 +114,29 @@ class _MainScreenState extends State<MainScreen>
   void _goToAddServer() async {
     final result = await Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const AddServerScreen(),
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 350),
+      MaterialPageRoute(
+        builder: (_) => const AddServerScreen(),
       ),
     );
     if (result != null && result is Map<String, dynamic>) {
       setState(() => servers.add(result));
     }
   }
+
+  void _goToSettings() {
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (_, animation, __) => const SettingsScreen(),
+      transitionsBuilder: (_, animation, __, child) => SlideTransition(
+        position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+            .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+        child: child,
+      ),
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+  );
+}
 
   @override
   void dispose() {
@@ -189,7 +195,7 @@ class _MainScreenState extends State<MainScreen>
             const SizedBox(width: 16),
             _iconBtn(Icons.refresh_rounded, () {}),
             const SizedBox(width: 16),
-            _iconBtn(Icons.settings_rounded, () {}),
+            _iconBtn(Icons.settings_rounded, _goToSettings),
           ],
         ),
       ],
@@ -718,56 +724,396 @@ class _AddServerScreenState extends State<AddServerScreen>
   }
 
   Widget _buildQrPanel() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            color: kGlass,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: kGlassBorder, width: 0.5),
-          ),
-          child: const Icon(
-            Icons.qr_code_scanner_rounded,
-            size: 72,
-            color: Color(0x44FFFFFF),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          '서버 QR 코드를 스캔하면\n자동으로 추가돼요',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: const Color(0x88FFFFFF),
-            height: 1.7,
-          ),
-        ),
-        const SizedBox(height: 24),
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 13),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 200,
+            height: 200,
             decoration: BoxDecoration(
               color: kGlass,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: kGlassBorder, width: 0.5),
             ),
-            child: Text(
-              '카메라 열기',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 14,
-                fontWeight: FontWeight.w300,
-                color: Colors.white,
+            child: const Icon(
+              Icons.qr_code_scanner_rounded,
+              size: 72,
+              color: Color(0x44FFFFFF),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            '서버 QR 코드를 스캔하면\n자동으로 추가돼요',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: const Color(0x88FFFFFF),
+              height: 1.7,
+            ),
+          ),
+          const SizedBox(height: 24),
+          GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 13),
+              decoration: BoxDecoration(
+                color: kGlass,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: kGlassBorder, width: 0.5),
+              ),
+              child: Text(
+                '카메라 열기',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// SETTINGS SCREEN
+// ─────────────────────────────────────────
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool autoConnect = true;
+  bool autoReconnect = true;
+  bool dnsProxy = false;
+  bool background = true;
+  int routeMode = 0;
+  String port = '10808';
+  String language = '한국어';
+  String theme = '시스템 따라가기';
+
+  final Map<String, bool> appExclusions = {
+    '카카오뱅크': true,
+    '토스': true,
+    '쿠팡': false,
+    '카카오톡': false,
+  };
+
+  final Map<String, String> appPackages = {
+    '카카오뱅크': 'com.kakaobank.channel',
+    '토스': 'viva.republica.toss',
+    '쿠팡': 'com.coupang.mobile',
+    '카카오톡': 'com.kakao.talk',
+  };
+
+  final Map<String, IconData> appIcons = {
+    '카카오뱅크': Icons.account_balance_rounded,
+    '토스': Icons.credit_card_rounded,
+    '쿠팡': Icons.shopping_bag_rounded,
+    '카카오톡': Icons.chat_bubble_rounded,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: _buildHeader(),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: [
+                  const SizedBox(height: 8),
+                  _sectionLabel('연결'),
+                  _glassCard([
+                    _toggleRow('앱 시작 시 자동 연결', '앱 켜지면 마지막 서버에 바로 연결',
+                        autoConnect, (v) => setState(() => autoConnect = v)),
+                    _divider(),
+                    _toggleRow('연결 끊기면 자동 재연결', '네트워크 변경 시 자동으로 재시도',
+                        autoReconnect, (v) => setState(() => autoReconnect = v)),
+                    _divider(),
+                    _selectRow('로컬 포트', ['10808', '1080', '7890'], port,
+                        (v) => setState(() => port = v!)),
+                  ]),
+                  const SizedBox(height: 20),
+                  _sectionLabel('우회 설정'),
+                  _glassCard([
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(children: [
+                        Expanded(child: _routeCard(0, '🌍', '전체 우회', '모든 트래픽을 서버로 전송')),
+                        const SizedBox(width: 8),
+                        Expanded(child: _routeCard(1, '🇨🇳', '중국 제외', '중국 사이트는 직접 연결')),
+                      ]),
+                    ),
+                    _divider(),
+                    _toggleRow('DNS 우회', 'DNS 쿼리도 프록시로 전송',
+                        dnsProxy, (v) => setState(() => dnsProxy = v)),
+                  ]),
+                  const SizedBox(height: 20),
+                  _sectionLabel('앱별 제외 (이 앱들은 VPN 안 거침)'),
+                  _glassCard([
+                    ...appExclusions.keys.map((app) => Column(children: [
+                      _appRow(app),
+                      if (app != appExclusions.keys.last) _divider(),
+                    ])),
+                    _divider(),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        child: Text('+ 앱 추가',
+                            style: GoogleFonts.notoSansKr(
+                                fontSize: 14, fontWeight: FontWeight.w300, color: kGreen)),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  _sectionLabel('앱'),
+                  _glassCard([
+                    _selectRow('언어', ['한국어', 'English', '中文'], language,
+                        (v) => setState(() => language = v!)),
+                    _divider(),
+                    _selectRow('테마', ['시스템 따라가기', '라이트', '다크'], theme,
+                        (v) => setState(() => theme = v!)),
+                    _divider(),
+                    _toggleRow('백그라운드 실행', '창 닫아도 트레이에서 계속 실행',
+                        background, (v) => setState(() => background = v)),
+                    _divider(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('코어 버전',
+                              style: GoogleFonts.notoSansKr(
+                                  fontSize: 14, fontWeight: FontWeight.w300, color: Colors.white)),
+                          Text('Xray 1.8.4',
+                              style: GoogleFonts.notoSansKr(
+                                  fontSize: 13, fontWeight: FontWeight.w300, color: const Color(0x66FFFFFF))),
+                        ],
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  _sectionLabel('데이터'),
+                  _glassCard([
+                    GestureDetector(
+                      onTap: _showResetDialog,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('서버 목록 전체 초기화',
+                                style: GoogleFonts.notoSansKr(
+                                    fontSize: 14, fontWeight: FontWeight.w300,
+                                    color: const Color(0xFFF09595))),
+                            const Icon(Icons.chevron_right_rounded,
+                                color: Color(0x44FFFFFF), size: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(children: [
+      GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 22),
+      ),
+      const SizedBox(width: 12),
+      const Text('설정',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,
+              color: Colors.white, letterSpacing: 0.5)),
+    ]);
+  }
+
+  Widget _sectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 2),
+      child: Text(label,
+          style: GoogleFonts.notoSansKr(
+              fontSize: 12, fontWeight: FontWeight.w300, color: const Color(0x66FFFFFF))),
+    );
+  }
+
+  Widget _glassCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: kGlass,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: kGlassBorder, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+    );
+  }
+
+  Widget _divider() => Container(height: 0.5, color: kGlassBorder);
+
+  Widget _toggleRow(String title, String desc, bool value, ValueChanged<bool> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 14, fontWeight: FontWeight.w300, color: Colors.white)),
+            const SizedBox(height: 3),
+            Text(desc,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 12, fontWeight: FontWeight.w300, color: const Color(0x55FFFFFF))),
+          ]),
+        ),
+        const SizedBox(width: 12),
+        CupertinoSwitch(value: value, onChanged: onChanged, activeColor: kGreen),
+      ]),
+    );
+  }
+
+  Widget _selectRow(String title, List<String> options, String value, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title,
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 14, fontWeight: FontWeight.w300, color: Colors.white)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0x22FFFFFF),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: kGlassBorder, width: 0.5),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                onChanged: onChanged,
+                dropdownColor: const Color(0xFF333331),
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 13, fontWeight: FontWeight.w300, color: Colors.white),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                    color: Color(0x66FFFFFF), size: 18),
+                isDense: true,
+                items: options.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _routeCard(int index, String emoji, String title, String desc) {
+    final isSelected = routeMode == index;
+    return GestureDetector(
+      onTap: () => setState(() => routeMode = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? kGreen.withOpacity(0.15) : const Color(0x11FFFFFF),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? kGreen.withOpacity(0.5) : const Color(0x22FFFFFF),
+            width: isSelected ? 1 : 0.5,
+          ),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(height: 6),
+          Text(title,
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 13, fontWeight: FontWeight.w500,
+                  color: isSelected ? const Color(0xFF5DCAA5) : Colors.white)),
+          const SizedBox(height: 2),
+          Text(desc,
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 11, fontWeight: FontWeight.w300,
+                  color: isSelected
+                      ? const Color(0xFF5DCAA5).withOpacity(0.7)
+                      : const Color(0x55FFFFFF))),
+        ]),
+      ),
+    );
+  }
+
+  Widget _appRow(String app) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(children: [
+        Container(
+          width: 36, height: 36,
+          decoration: BoxDecoration(
+            color: const Color(0x22FFFFFF),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(appIcons[app], size: 18, color: const Color(0x88FFFFFF)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(app,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 14, fontWeight: FontWeight.w300, color: Colors.white)),
+            Text(appPackages[app]!,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 11, fontWeight: FontWeight.w300, color: const Color(0x44FFFFFF))),
+          ]),
+        ),
+        CupertinoSwitch(
+          value: appExclusions[app]!,
+          onChanged: (v) => setState(() => appExclusions[app] = v),
+          activeColor: kGreen,
+        ),
+      ]),
+    );
+  }
+
+  void _showResetDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: const Text('서버 목록 초기화'),
+        content: const Text('모든 서버가 삭제돼요. 계속할까요?'),
+        actions: [
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('초기화'),
+          ),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
     );
   }
 }
