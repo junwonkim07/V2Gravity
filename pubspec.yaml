@@ -1,5 +1,5 @@
 name: v2gravity
-description: "A new Flutter project."
+description: "x-ray client"
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +19,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: NotoSansCJK
+      fonts:
+        - asset: fonts/NotoSansCJKkr-Black.otf
+          weight: 900
+        - asset: fonts/NotoSansCJKkr-Regular.otf
+          weight: 400
+  
