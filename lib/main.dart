@@ -144,8 +144,8 @@ void _toggleConnect() async {
   Navigator.push(
     context,
     PageRouteBuilder(
-      pageBuilder: (_, animation, __) => const SettingsScreen(),
-      transitionsBuilder: (_, animation, __, child) => SlideTransition(
+      pageBuilder: (_, animation, _) => const SettingsScreen(),
+      transitionsBuilder: (_, animation, _, child) => SlideTransition(
         position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
             .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
         child: child,
@@ -314,7 +314,7 @@ void _toggleConnect() async {
   Widget _buildServerList() {
     return ListView.separated(
       itemCount: servers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         final s = servers[i];
         final isSelected = i == selectedIndex;
@@ -1007,7 +1007,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ]),
         ),
         const SizedBox(width: 12),
-        CupertinoSwitch(value: value, onChanged: onChanged, activeColor: kGreen),
+        CupertinoSwitch(value: value, onChanged: onChanged, activeTrackColor: kGreen),
       ]),
     );
   }
@@ -1107,7 +1107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         CupertinoSwitch(
           value: appExclusions[app]!,
           onChanged: (v) => setState(() => appExclusions[app] = v),
-          activeColor: kGreen,
+          activeTrackColor: kGreen,
         ),
       ]),
     );
