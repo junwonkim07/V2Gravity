@@ -437,15 +437,34 @@ class XrayService {
         result['testExitCode'] = testResult.exitCode;
         result['testStdout'] = testResult.stdout.toString();
         result['testStderr'] = testResult.stderr.toString();
-      
-      print('[Diagnose] xray test 결과: exit code ${testResult.exitCode}');
-      if (testResult.exitCode == 0) {
-        result['configTestValid'] = true;
-        print('[Diagnose] ✅ config.json이 xray에서 유효합니다');
-      } else {
+      // 5. xray 드라이런 테스트 (-test)
+      print('[Diagnose] xray test 모드 실행 중...');
+      try {
+        final testResult = await Process.run(
+          xrayPath,
+          ['-test', '-c', tempConfig],
+        ).timeout(const Duration(seconds: 5));
+        result['testExitCode'] = testResult.exitCode;
+        result['testStdout'] = testResult.stdout.toString();
+        result['testStderr'] = testResult.stderr.toString();
+        
+        print('[Diagnose] xray test 결과: exit code ${testResult.exitCode}');
+        if (testResult.exitCode == 0) {
+          result['configTestValid'] = true;
+          print('[Diagnose] ✅ config.json이 xray에서 유효합니다');
+        } else {
+          result['configTestValid'] = false;
+          print('[Diagnose] ❌ config.json이 xray에서 거부되었습니다');
+          print('[Diagnose] stderr: ${testResult.stderr}');
+        }
+      } on TimeoutException {
+        result['testExitCode'] = -1;
         result['configTestValid'] = false;
-        print('[Diagnose] ❌ config.json이 xray에서 거부되었습니다');
-        print('[Diagnose] stderr: ${testResult.stderr}');
+        print('[Diagnose] ❌ xray test 타임아웃 (5초 초과)');
+      } catch (e) {
+        result['testError'] = e.toString();
+        result['configTestValid'] = false;
+        print('[Diagnose] ❌ xray test 오류: $e');
       }
 
       result['status'] = 'ok';
