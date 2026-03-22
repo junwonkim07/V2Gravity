@@ -333,13 +333,18 @@ class XrayService {
       // 프로세스가 200ms 내에 죽는지 확인
       await Future.delayed(const Duration(milliseconds: 200));
       
-      // exitCode가 완료되었는지 확인 (프로세스가 아직 살아있는지)
-      if (_process!.exitCode.isCompleted) {
+      try {
+        // exitCode가 200ms 내에 완료되면, 프로세스가 즉시 종료된 것
+        await _process!.exitCode.timeout(const Duration(milliseconds: 1));
+        // 타임아웃이 없으면 프로세스가 종료됨
         final code = await _process!.exitCode;
-        print('[XrayService] 오류: xray 프로세스가 즉시 종료됨 (exit code: $code)');
+        print('[XrayService] ❌ xray 프로세스가 즉시 종료됨 (exit code: $code)');
         print('[XrayService] stderr: ${stderrLines.join('\n')}');
         _process = null;
         return false;
+      } on TimeoutException {
+        // 타임아웃 발생 = 프로세스가 아직 살아있다는 뜻 (정상)
+        print('[XrayService] 프로세스가 정상 실행 중입니다');
       }
 
       if (useSystemProxy) {
@@ -424,14 +429,14 @@ class XrayService {
 
       // 5. xray 드라이런 테스트 (-test)
       print('[Diagnose] xray test 모드 실행 중...');
-      final testResult = await Process.run(
-        xrayPath,
-        ['-test', '-c', tempConfig],
-        timeout: const Duration(seconds: 5),
-      );
-      result['testExitCode'] = testResult.exitCode;
-      result['testStdout'] = testResult.stdout.toString();
-      result['testStderr'] = testResult.stderr.toString();
+      try {
+        final testResult = await Process.run(
+          xrayPath,
+          ['-test', '-c', tempConfig],
+        ).timeout(const Duration(seconds: 5));
+        result['testExitCode'] = testResult.exitCode;
+        result['testStdout'] = testResult.stdout.toString();
+        result['testStderr'] = testResult.stderr.toString();
       
       print('[Diagnose] xray test 결과: exit code ${testResult.exitCode}');
       if (testResult.exitCode == 0) {
