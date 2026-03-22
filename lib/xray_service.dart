@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -434,16 +435,7 @@ class XrayService {
           xrayPath,
           ['-test', '-c', tempConfig],
         ).timeout(const Duration(seconds: 5));
-        result['testExitCode'] = testResult.exitCode;
-        result['testStdout'] = testResult.stdout.toString();
-        result['testStderr'] = testResult.stderr.toString();
-      // 5. xray 드라이런 테스트 (-test)
-      print('[Diagnose] xray test 모드 실행 중...');
-      try {
-        final testResult = await Process.run(
-          xrayPath,
-          ['-test', '-c', tempConfig],
-        ).timeout(const Duration(seconds: 5));
+        
         result['testExitCode'] = testResult.exitCode;
         result['testStdout'] = testResult.stdout.toString();
         result['testStderr'] = testResult.stderr.toString();
@@ -461,10 +453,6 @@ class XrayService {
         result['testExitCode'] = -1;
         result['configTestValid'] = false;
         print('[Diagnose] ❌ xray test 타임아웃 (5초 초과)');
-      } catch (e) {
-        result['testError'] = e.toString();
-        result['configTestValid'] = false;
-        print('[Diagnose] ❌ xray test 오류: $e');
       }
 
       result['status'] = 'ok';
