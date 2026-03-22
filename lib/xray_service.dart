@@ -50,12 +50,32 @@ class XrayService {
       "security": security.toLowerCase() == "없음" ? "none" : security.toLowerCase(),
     };
 
+    final securityLower = security.toLowerCase();
+
     // TLS 설정
-    if (security.toLowerCase() != "없음" && security.toLowerCase() != "none") {
+    if (securityLower == "tls") {
       streamSettings["tlsSettings"] = {
         "serverName": sni,
         "allowInsecure": false,
         "disableSystemRoot": false,
+        "alpn": ["h2", "http/1.1"],
+      };
+    }
+
+    // REALITY 설정 (xray 전용, TLS와 유사하지만 더 강력한 위장)
+    if (securityLower == "reality") {
+      // REALITY는 최소한의 설정이 필요 (publicKey는 반드시 필요)
+      streamSettings["realitySettings"] = {
+        "show": false,
+        "dest": "$sni:443",
+        "xver": 0,
+        "serverName": sni,
+        "privateKey": "", // 실제 연결에서는 서버에서 제공해야 함
+        "minClient": "",
+        "maxClient": "",
+        "maxTimediff": 0,
+        "uapdSize": "",
+        "shortIds": [""],
       };
     }
 
@@ -297,31 +317,27 @@ class XrayService {
       print('[XrayService] xray.exe 시작 중... (config: $configPath)');
       print('[XrayService] 명령어: "$xrayPath" run -c "$configPath"');
       
-      _process = await Process.start(xrayPath, ['run', '-c', configPath]);
+      final process = await Process.start(xrayPath, ['run', '-c', configPath]);
+      _process = process;
 
-      if (_process == null) {
-        print('[XrayService] 오류: 프로세스 생성 실패');
-        return false;
-      }
-
-      print('[XrayService] 프로세스 시작됨 (PID: ${_process!.pid})');
+      print('[XrayService] 프로세스 시작됨 (PID: ${process.pid})');
 
       // ✅ 로그 수집 (Process.start() 직후에 등록해야 함)
       final stdoutLines = <String>[];
       final stderrLines = <String>[];
       
-      _process!.stdout.transform(utf8.decoder).listen((log) {
+      process.stdout.transform(utf8.decoder).listen((log) {
         stdoutLines.add(log);
         if (log.isNotEmpty) print('[xray stdout] $log');
       });
 
-      _process!.stderr.transform(utf8.decoder).listen((log) {
+      process.stderr.transform(utf8.decoder).listen((log) {
         stderrLines.add(log);
         if (log.isNotEmpty) print('[xray stderr] $log');
       });
 
       // 프로세스 종료 모니터링 (백그라운드 비동기 처리)
-      _process!.exitCode.then((code) {
+      process.exitCode.then((code) {
         print('[XrayService] 프로세스 종료 (exit code: $code)');
         if (code != 0) {
           print('[XrayService] xray 실행 오류 발생');
@@ -336,7 +352,7 @@ class XrayService {
       
       try {
         // exitCode가 200ms 내에 완료되면, 프로세스가 즉시 종료된 것
-        await _process!.exitCode.timeout(const Duration(milliseconds: 1));
+        await process.exitCode.timeout(const Duration(milliseconds: 1));
         // 타임아웃이 없으면 프로세스가 종료됨
         final code = await _process!.exitCode;
         print('[XrayService] ❌ xray 프로세스가 즉시 종료됨 (exit code: $code)');
