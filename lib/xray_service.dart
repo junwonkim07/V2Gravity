@@ -63,7 +63,7 @@ class XrayService {
     }
 
     // REALITY 설정 (xray 전용, TLS와 유사하지만 더 강력한 위장)
-    if (securityLower == "reality") {
+    if (securityLower == "reality" && sni.isNotEmpty) {
       // REALITY는 최소한의 설정이 필요 (publicKey는 반드시 필요)
       streamSettings["realitySettings"] = {
         "show": false,
@@ -354,7 +354,7 @@ class XrayService {
         // exitCode가 200ms 내에 완료되면, 프로세스가 즉시 종료된 것
         await process.exitCode.timeout(const Duration(milliseconds: 1));
         // 타임아웃이 없으면 프로세스가 종료됨
-        final code = await _process!.exitCode;
+        final code = await process.exitCode;
         print('[XrayService] ❌ xray 프로세스가 즉시 종료됨 (exit code: $code)');
         print('[XrayService] stderr: ${stderrLines.join('\n')}');
         _process = null;
