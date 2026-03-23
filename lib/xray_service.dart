@@ -66,16 +66,15 @@ class XrayService {
     if (securityLower == "reality" && sni.isNotEmpty) {
       // REALITY는 최소한의 설정이 필요 (publicKey는 반드시 필요)
       streamSettings["realitySettings"] = {
-        "show": false,
-        "dest": "$sni:443",
-        "xver": 0,
-        "serverName": sni,
-        "privateKey": "", // 실제 연결에서는 서버에서 제공해야 함
-        "minClient": "",
-        "maxClient": "",
-        "maxTimediff": 0,
-        "uapdSize": "",
-        "shortIds": [""],
+        "handshakeKey": "", // 실제 연결에서는 서버에서 제공해야 함
+        "minLength": 1,
+        "maxLength": 1,
+        "serverNames": [sni], // serverNames 필드에 sni 값을 추가
+        "spiderX": {
+          "enabled": true,
+          "serverName": sni,
+          "spiderXPath": "/ray"
+        }
       };
     }
 

@@ -102,3 +102,58 @@ A unified platform for anti-censorship.
 [XrayService] stderr: []
 [XrayService] ❌ xray 프로세스가 즉시 종료됨 (exit code: 23)
 [XrayService] stderr:
+
+### Troubleshooting Xray Service Failures
+
+**Error:** `Failed to start: main: failed to load config files: [...] > infra/conf: empty "serverNames"`
+
+**Cause:** This error indicates that the Xray configuration (`config.json`) is missing the required `serverNames` parameter within the Reality configuration.
+
+**Solution:** Ensure that your `config.json` file includes a `serverNames` array with at least one valid server name under the `outbounds.settings.reality` section.
+
+**Example snippet for `config.json`:**
+```json
+{
+  // ... other configurations
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "example.com",
+            "port": 443,
+            "users": [
+              {
+                "id": "your-uuid",
+                "alterId": 0,
+                "security": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "handshakeKey": "your-handshake-key",
+          "minLength": 1,
+          "maxLength": 1,
+          "serverNames": [
+            "your-server-name.com" // <-- Add or correct this line
+          ],
+          "spiderX": {
+            "enabled": true,
+            "serverName": "your-server-name.com",
+            "spiderXPath": "/ray"
+          }
+        }
+      }
+    }
+  ]
+  // ... other configurations
+}
+```
+Please replace `your-server-name.com`, `your-handshake-key`, and `your-uuid` with your actual configuration values.
