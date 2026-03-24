@@ -95,7 +95,7 @@ class _MainScreenState extends State<MainScreen>
     final m = ((elapsedSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final s = (elapsedSeconds % 60).toString().padLeft(2, '0');
     return '$h:$m:$s';
-  }
+  } 
 
 void _toggleConnect() async {
   if (!connected) {
