@@ -9,19 +9,15 @@ export const metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`dark:bg-gray-900`}>
-        <ThemeProvider
-          attribute="class"
-          storageKey="color-mode"
-          defaultTheme="system"
-          enableSystem={true}
-        >
-          <main>
-            <ReactBricksApp>{children}</ReactBricksApp>
-          </main>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider
+      attribute="class"
+      storageKey="color-mode"
+      defaultTheme="system"
+      enableSystem={true}
+    >
+      <main>
+        <ReactBricksApp>{children}</ReactBricksApp>
+      </main>
+    </ThemeProvider>
   );
 }

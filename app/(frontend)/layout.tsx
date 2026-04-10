@@ -6,7 +6,6 @@ import ErrorNoKeys from 'components/react-bricks/error-no-keys';
 import ReactBricksApp from 'components/react-bricks/react-bricks-app';
 import { ThemeProvider } from 'components/react-bricks/theme-provider';
 import { WelcomeToast } from 'components/welcome-toast';
-import { GeistSans } from 'geist/font/sans';
 import { getCart } from 'lib/shopify';
 import { ensureStartsWith } from 'lib/utils';
 import { cookies } from 'next/headers';
@@ -122,30 +121,26 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const footerOk = footer ? cleanPage(footer, config.pageTypes || [], bricks) : null;
 
   return (
-    <html lang="en" className={GeistSans.variable}>
-      <body className="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
-          <CartProvider cartPromise={cart}>
-            <ReactBricksApp>
-              <main>
-                {headerOk && !errorHeader ? (
-                  <PageViewer page={headerOk} main={false} />
-                ) : (
-                  <ErrorNoHeader />
-                )}
-                {children}
-                {footerOk && !errorFooter ? (
-                  <PageViewer page={footerOk} main={false} />
-                ) : (
-                  <ErrorNoFooter />
-                )}
-                <Toaster closeButton />
-                <WelcomeToast />
-              </main>
-            </ReactBricksApp>
-          </CartProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
+      <CartProvider cartPromise={cart}>
+        <ReactBricksApp>
+          <main>
+            {headerOk && !errorHeader ? (
+              <PageViewer page={headerOk} main={false} />
+            ) : (
+              <ErrorNoHeader />
+            )}
+            {children}
+            {footerOk && !errorFooter ? (
+              <PageViewer page={footerOk} main={false} />
+            ) : (
+              <ErrorNoFooter />
+            )}
+            <Toaster closeButton />
+            <WelcomeToast />
+          </main>
+        </ReactBricksApp>
+      </CartProvider>
+    </ThemeProvider>
   );
 }
