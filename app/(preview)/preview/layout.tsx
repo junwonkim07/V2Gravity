@@ -76,38 +76,34 @@ export default async function Layout({
   const footerOk = footer ? cleanPage(footer, config.pageTypes || [], bricks) : null;
 
   return (
-    <html lang={params.lang} suppressHydrationWarning>
-      <body className={`bg-white dark:bg-[#0d1117]`}>
-        <ThemeProvider
-          attribute="class"
-          storageKey="color-mode"
-          defaultTheme="system"
-          enableSystem={true}
-        >
-          <main>
-            <ReactBricksApp>
-              <PageLayout>
-                {!errorNoKeys && (
-                  <>
-                    {headerOk && !errorHeader ? (
-                      <PageViewer page={headerOk} main={false} />
-                    ) : (
-                      <ErrorNoHeader />
-                    )}
-                    {children}
-                    {footerOk && !errorFooter ? (
-                      <PageViewer page={footerOk} main={false} />
-                    ) : (
-                      <ErrorNoFooter />
-                    )}
-                  </>
+    <ThemeProvider
+      attribute="class"
+      storageKey="color-mode"
+      defaultTheme="system"
+      enableSystem={true}
+    >
+      <main>
+        <ReactBricksApp>
+          <PageLayout>
+            {!errorNoKeys && (
+              <>
+                {headerOk && !errorHeader ? (
+                  <PageViewer page={headerOk} main={false} />
+                ) : (
+                  <ErrorNoHeader />
                 )}
-                {errorNoKeys && <ErrorNoKeys />}
-              </PageLayout>
-            </ReactBricksApp>
-          </main>
-        </ThemeProvider>
-      </body>
-    </html>
+                {children}
+                {footerOk && !errorFooter ? (
+                  <PageViewer page={footerOk} main={false} />
+                ) : (
+                  <ErrorNoFooter />
+                )}
+              </>
+            )}
+            {errorNoKeys && <ErrorNoKeys />}
+          </PageLayout>
+        </ReactBricksApp>
+      </main>
+    </ThemeProvider>
   );
 }
