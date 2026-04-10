@@ -1,18 +1,18 @@
 import {
-  addToCart as medusaAddToCart,
-  createCart as medusaCreateCart,
-  getCart as medusaGetCart,
-  getCollection as medusaGetCollection,
-  getCollectionProducts as medusaGetCollectionProducts,
-  getCollections as medusaGetCollections,
-  getMenu as medusaGetMenu,
-  getPage as medusaGetPage,
-  getPages as medusaGetPages,
-  getProduct as medusaGetProduct,
-  getProductRecommendations as medusaGetProductRecommendations,
-  getProducts as medusaGetProducts,
-  removeFromCart as medusaRemoveFromCart,
-  updateCartItem as medusaUpdateCartItem
+    addToCart as medusaAddToCart,
+    createCart as medusaCreateCart,
+    getCart as medusaGetCart,
+    getCollection as medusaGetCollection,
+    getCollectionProducts as medusaGetCollectionProducts,
+    getCollections as medusaGetCollections,
+    getMenu as medusaGetMenu,
+    getPage as medusaGetPage,
+    getPages as medusaGetPages,
+    getProduct as medusaGetProduct,
+    getProductRecommendations as medusaGetProductRecommendations,
+    getProducts as medusaGetProducts,
+    removeFromCart as medusaRemoveFromCart,
+    updateCartItem as medusaUpdateCartItem
 } from '../medusa';
 import type { Cart, Collection, Menu, Page, Product } from './types';
 

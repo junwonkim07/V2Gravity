@@ -1,23 +1,23 @@
 import { DEFAULT_OPTION, HIDDEN_PRODUCT_TAG, MEDUSA_API_URL, TAGS } from '../constants';
 import {
-  Cart,
-  CartItem,
-  Collection,
-  Image,
-  MedusaCart,
-  MedusaCartItem,
-  MedusaCartResponse,
-  MedusaCollection,
-  MedusaCollectionListResponse,
-  MedusaProduct,
-  MedusaProductListResponse,
-  MedusaVariant,
-  Menu,
-  Money,
-  Page,
-  Product,
-  ProductOption,
-  ProductVariant
+    Cart,
+    CartItem,
+    Collection,
+    Image,
+    MedusaCart,
+    MedusaCartItem,
+    MedusaCartResponse,
+    MedusaCollection,
+    MedusaCollectionListResponse,
+    MedusaProduct,
+    MedusaProductListResponse,
+    MedusaVariant,
+    Menu,
+    Money,
+    Page,
+    Product,
+    ProductOption,
+    ProductVariant
 } from './types';
 
 type SortKey = 'RELEVANCE' | 'BEST_SELLING' | 'CREATED_AT' | 'PRICE' | 'created_at';
