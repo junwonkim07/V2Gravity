@@ -1,7 +1,7 @@
 'use server';
 
 import { TAGS } from 'lib/constants';
-import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/shopify';
+import { addToCart, createCart, getCart, removeFromCart, updateCartItem } from 'lib/medusa';
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -14,14 +14,14 @@ export async function addItem(prevState: any, selectedVariantId: string | undefi
   }
 
   try {
-    await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity: 1 }]);
+    await addToCart(cartId, [{ variant_id: selectedVariantId, quantity: 1 }]);
     revalidateTag(TAGS.cart);
   } catch (e) {
     return 'Error adding item to cart';
   }
 }
 
-export async function removeItem(prevState: any, merchandiseId: string) {
+export async function removeItem(prevState: any, lineItemId: string) {
   let cartId = cookies().get('cartId')?.value;
 
   if (!cartId) {
@@ -29,20 +29,8 @@ export async function removeItem(prevState: any, merchandiseId: string) {
   }
 
   try {
-    const cart = await getCart(cartId);
-
-    if (!cart) {
-      return 'Error fetching cart';
-    }
-
-    const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
-
-    if (lineItem && lineItem.id) {
-      await removeFromCart(cartId, [lineItem.id]);
-      revalidateTag(TAGS.cart);
-    } else {
-      return 'Item not found in cart';
-    }
+    await removeFromCart(cartId, lineItemId);
+    revalidateTag(TAGS.cart);
   } catch (e) {
     return 'Error removing item from cart';
   }
@@ -51,7 +39,7 @@ export async function removeItem(prevState: any, merchandiseId: string) {
 export async function updateItemQuantity(
   prevState: any,
   payload: {
-    merchandiseId: string;
+    lineItemId: string;
     quantity: number;
   }
 ) {
@@ -61,32 +49,13 @@ export async function updateItemQuantity(
     return 'Missing cart ID';
   }
 
-  const { merchandiseId, quantity } = payload;
+  const { lineItemId, quantity } = payload;
 
   try {
-    const cart = await getCart(cartId);
-
-    if (!cart) {
-      return 'Error fetching cart';
-    }
-
-    const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
-
-    if (lineItem && lineItem.id) {
-      if (quantity === 0) {
-        await removeFromCart(cartId, [lineItem.id]);
-      } else {
-        await updateCart(cartId, [
-          {
-            id: lineItem.id,
-            merchandiseId,
-            quantity
-          }
-        ]);
-      }
-    } else if (quantity > 0) {
-      // If the item doesn't exist in the cart and quantity > 0, add it
-      await addToCart(cartId, [{ merchandiseId, quantity }]);
+    if (quantity === 0) {
+      await removeFromCart(cartId, lineItemId);
+    } else {
+      await updateCartItem(cartId, lineItemId, quantity);
     }
 
     revalidateTag(TAGS.cart);
@@ -109,7 +78,8 @@ export async function redirectToCheckout() {
     return 'Error fetching cart';
   }
 
-  redirect(cart.checkoutUrl);
+  // Redirect to checkout page (you'll need to implement this)
+  redirect(`/checkout/${cartId}`);
 }
 
 export async function createCartAndSetCookie() {

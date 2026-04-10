@@ -6,7 +6,7 @@ import ErrorNoKeys from 'components/react-bricks/error-no-keys';
 import ReactBricksApp from 'components/react-bricks/react-bricks-app';
 import { ThemeProvider } from 'components/react-bricks/theme-provider';
 import { WelcomeToast } from 'components/welcome-toast';
-import { getCart } from 'lib/shopify';
+import { getCart } from 'lib/medusa';
 import { ensureStartsWith } from 'lib/utils';
 import { cookies } from 'next/headers';
 import { ReactNode } from 'react';

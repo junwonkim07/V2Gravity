@@ -28,4 +28,6 @@ export const TAGS = {
 
 export const HIDDEN_PRODUCT_TAG = 'nextjs-frontend-hidden';
 export const DEFAULT_OPTION = 'Default Title';
-export const SHOPIFY_GRAPHQL_API_ENDPOINT = '/api/2023-01/graphql.json';
+
+// Medusa API configuration
+export const MEDUSA_API_URL = process.env.NEXT_PUBLIC_MEDUSA_API_URL || 'http://localhost:9000';

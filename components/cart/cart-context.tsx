@@ -1,9 +1,22 @@
 'use client';
 
-import type { Cart, CartItem, Product, ProductVariant } from 'lib/shopify/types';
+import type { Cart, CartItem, Product } from 'lib/medusa/types';
 import React, { createContext, use, useContext, useMemo, useOptimistic } from 'react';
 
 type UpdateType = 'plus' | 'minus' | 'delete';
+
+interface ProductVariant {
+  id: string;
+  title: string;
+  price: {
+    amount: string;
+    currencyCode: string;
+  };
+  selectedOptions: Array<{
+    name: string;
+    value: string;
+  }>;
+}
 
 type CartAction =
   | { type: 'UPDATE_ITEM'; payload: { merchandiseId: string; updateType: UpdateType } }
