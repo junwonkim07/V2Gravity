@@ -3,6 +3,7 @@
 import { RadioGroup } from "@headlessui/react"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
+import { cartHasPhysicalItems } from "@lib/util/is-digital-cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -51,8 +52,12 @@ const Payment = ({
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
+  const requiresShipping = cartHasPhysicalItems(cart)
+
   const paymentReady =
-    (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard
+    (activeSession &&
+      (!requiresShipping || (cart?.shipping_methods?.length ?? 0) !== 0)) ||
+    paidByGiftcard
 
   const createQueryString = useCallback(
     (name: string, value: string) => {

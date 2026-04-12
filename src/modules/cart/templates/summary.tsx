@@ -1,6 +1,7 @@
 "use client"
 
 import { Button, Heading } from "@medusajs/ui"
+import { cartHasPhysicalItems } from "@lib/util/is-digital-cart"
 
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
@@ -15,9 +16,11 @@ type SummaryProps = {
 }
 
 function getCheckoutStep(cart: HttpTypes.StoreCart) {
+  const requiresShipping = cartHasPhysicalItems(cart)
+
   if (!cart?.shipping_address?.address_1 || !cart.email) {
     return "address"
-  } else if (cart?.shipping_methods?.length === 0) {
+  } else if (requiresShipping && cart?.shipping_methods?.length === 0) {
     return "delivery"
   } else {
     return "payment"

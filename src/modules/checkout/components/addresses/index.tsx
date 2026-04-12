@@ -2,6 +2,7 @@
 
 import { setAddresses } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
+import { isDigitalOnlyCart } from "@lib/util/is-digital-cart"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text, useToggleState } from "@medusajs/ui"
@@ -24,6 +25,7 @@ const Addresses = ({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const isDigitalOnly = isDigitalOnlyCart(cart)
 
   const isOpen = searchParams.get("step") === "address"
 
@@ -46,7 +48,7 @@ const Addresses = ({
           level="h2"
           className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
         >
-          Shipping Address
+          {isDigitalOnly ? "Contact Details" : "Shipping Address"}
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -63,6 +65,11 @@ const Addresses = ({
       </div>
       {isOpen ? (
         <form action={formAction}>
+          <input
+            type="hidden"
+            name="next_step"
+            value={isDigitalOnly ? "payment" : "delivery"}
+          />
           <div className="pb-8">
             <ShippingAddress
               customer={customer}
@@ -84,7 +91,7 @@ const Addresses = ({
               </div>
             )}
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              Continue to delivery
+              {isDigitalOnly ? "Continue to payment" : "Continue to delivery"}
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>

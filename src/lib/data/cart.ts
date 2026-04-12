@@ -381,8 +381,11 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     return e.message
   }
 
+  const nextStep = formData.get("next_step")
+  const checkoutStep = nextStep === "payment" ? "payment" : "delivery"
+
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/${formData.get("shipping_address.country_code")}/checkout?step=${checkoutStep}`
   )
 }
 
