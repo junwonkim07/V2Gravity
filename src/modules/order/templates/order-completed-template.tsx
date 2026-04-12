@@ -9,13 +9,17 @@ import OrderDetails from "@modules/order/components/order-details"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import PaymentDetails from "@modules/order/components/payment-details"
 import { HttpTypes } from "@medusajs/types"
+import SubscriptionCard from "@modules/subscriptions/components/subscription-card"
+import { StoreSubscription } from "@types/subscription"
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder
+  subscription?: StoreSubscription | null
 }
 
 export default async function OrderCompletedTemplate({
   order,
+  subscription,
 }: OrderCompletedTemplateProps) {
   const cookies = await nextCookies()
 
@@ -37,6 +41,18 @@ export default async function OrderCompletedTemplate({
             <span>Your order was placed successfully.</span>
           </Heading>
           <OrderDetails order={order} />
+          {subscription && (
+            <div>
+              <Heading level="h2" className="flex flex-row text-3xl-regular mb-3">
+                Subscription
+              </Heading>
+              <SubscriptionCard
+                subscription={subscription}
+                showOrderLink={false}
+                data-testid="order-complete-subscription-card"
+              />
+            </div>
+          )}
           <Heading level="h2" className="flex flex-row text-3xl-regular">
             Summary
           </Heading>

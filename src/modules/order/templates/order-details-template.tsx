@@ -9,13 +9,17 @@ import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import React from "react"
+import SubscriptionCard from "@modules/subscriptions/components/subscription-card"
+import { StoreSubscription } from "@types/subscription"
 
 type OrderDetailsTemplateProps = {
   order: HttpTypes.StoreOrder
+  subscription?: StoreSubscription | null
 }
 
 const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
+  subscription,
 }) => {
   return (
     <div className="flex flex-col justify-center gap-y-4">
@@ -34,6 +38,16 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
         data-testid="order-details-container"
       >
         <OrderDetails order={order} showStatus />
+        {subscription && (
+          <div className="rounded-lg border border-gray-200 p-4">
+            <h2 className="text-large-semi mb-3">Subscription</h2>
+            <SubscriptionCard
+              subscription={subscription}
+              showOrderLink={false}
+              data-testid="order-subscription-card"
+            />
+          </div>
+        )}
         <Items order={order} />
         <ShippingDetails order={order} />
         <OrderSummary order={order} />

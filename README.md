@@ -112,6 +112,12 @@ You'll also need to setup the integrations in your Medusa server. See the [Medus
 
 # Resources
 
+## Marzban Integration
+
+For Marzban subscription issuance and storefront endpoint contracts, see:
+
+- `docs/marzban-medusa-integration.md`
+
 ## Learn more about Medusa
 
 - [Website](https://www.medusajs.com/)
