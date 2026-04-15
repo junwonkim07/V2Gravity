@@ -34,36 +34,68 @@ yarn dev
 접속:
 - http://localhost:8000
 
-## 2) Medusa 백엔드 실행 (별도 저장소/프로젝트)
+## 2) Backend(App + Worker) 분리 실행
 
-이미 백엔드 저장소가 있으면 그 경로에서:
-
-```powershell
-yarn
-yarn dev
-```
-
-기본 포트:
-- http://localhost:9000
-
-백엔드가 아직 없으면 빠른 생성:
+백엔드 저장소 경로(현재 로컬 기준):
 
 ```powershell
-npx create-medusa-app@latest
+cd C:\Users\junwo\OneDrive\문서\github\Tofu-ray_Backend
 ```
 
-생성 후 backend 폴더에서 dev 실행.
+환경 파일 준비:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+`.env` 필수 값:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
+REDIS_URL=redis://default:PASSWORD@HOST:6379
+ORDER_PAID_QUEUE_NAME=order_paid_events
+EVENT_WEBHOOK_SECRET=change-me
+STORE_JWT_SECRET=change-me
+MARZBAN_URL=http://localhost:8000
+MARZBAN_USERNAME=admin
+MARZBAN_PASSWORD=change-me
+```
+
+의존성 설치:
+
+```powershell
+pip install -r requirements.txt
+```
+
+앱 서버 실행 (터미널 A):
+
+```powershell
+uvicorn main:app --host 0.0.0.0 --port 9000 --reload
+```
+
+워커 실행 (터미널 B):
+
+```powershell
+python worker.py
+```
 
 ## 3) 한번에 띄우는 최소 순서
 
-터미널 1 (backend):
+터미널 1 (backend app):
 
 ```powershell
-# 백엔드 프로젝트 경로
-yarn dev
+cd C:\Users\junwo\OneDrive\문서\github\Tofu-ray_Backend
+uvicorn main:app --host 0.0.0.0 --port 9000 --reload
 ```
 
-터미널 2 (storefront):
+터미널 2 (backend worker):
+
+```powershell
+cd C:\Users\junwo\OneDrive\문서\github\Tofu-ray_Backend
+python worker.py
+```
+
+터미널 3 (storefront):
 
 ```powershell
 cd C:\Users\junwo\OneDrive\문서\github\Tofu-ray
